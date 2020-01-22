@@ -1,0 +1,105 @@
+---
+title: "PSTAT 174 & 274 - Homework 1"
+author: "Emily Lu"
+date: "10/12/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tseries)
+```
+
+#### 1.4 Show that the autocovariance function can be written as $$\gamma(s, t) = E[(x_s - \mu_s)(x_t - \mu_t)] = E(x_sx_t) - \mu_s\mu_t,$$ where $E[x_t] = \mu_t.$
+
+Sol. \begin{eqnarray} \gamma (s, t) &=& cov(x_s, x_t) \\ &=& E[(x_s - \mu_s)(x_t - \mu_t)] \\ &=& E[x_s x_t -x_s \mu_t - x_t \mu_s + \mu_s \mu_t] \\ &=& E[x_sx_t] - \mu_tE[x_s] - \mu_sE[x_t] + \mu_s \mu_t \\ &=& E[x_sx_t] - \mu_s\mu_t - \mu_s\mu_t + \mu_s\mu_t \\ &=& E[x_sx_t] - \mu_s\mu_t \; \checkmark \end{eqnarray}
+
+
+#### 1.21 (a) Simulate a series of $n = 500$ moving average observations as in Example 1.9 and compute the sample ACF, $\hat{\rho}(h)$, to lag 20. Compare the sample ACF you obtain to the actual ACF, $\rho(h)$ [Recall Example 1.20.]
+
+```{r, fig.align = 'center', echo = TRUE}
+# Simulates the 500 sample data points as in Example 1.9
+set.seed(1)
+w <- rnorm(500, 0, 1)
+
+# Moving Averages 
+v <- filter(w, sides = 2, filter = rep(1/3, 3)) 
+
+plot.ts(v, ylim = c(-3, 3), main = "Moving Average")
+```
+```{r, echo = TRUE}
+# Sample ACF
+MA <- v[!is.na(v)]
+acf(MA, lag.max = 20, plot = FALSE)
+```
+The actual ACF,$\rho(h)$, is $\rho(h) = \begin{cases} 1  &\text{if} \; h = 0, \\ \frac{2}{3} &\text{if} \; h \pm 1, \\ \frac{1}{3} &\text{if} \; h \pm 2, \\ 0 &\text{if} \; |h| > 2  \end{cases}$. The sample ACF at lag 20 is -0.083 which means there is a small negative correlation which is different than the actual ACF of 0 at lag 20. 
+
+#### $\;\;\;\;\;\;\;\;\;$(b) Repeat part (a) using only $n = 50$. How does changing $n$ affect the results?
+```{r, fig.align = 'center', echo = TRUE}
+set.seed(1)
+w1 <- rnorm(50, 0, 1)
+
+# Moving Averages 
+v1 <- filter(w1, sides = 2, filter = rep(1/3, 3)) 
+
+plot.ts(v1, ylim = c(-3, 3), main = "Moving Average")
+```
+```{r, echo = TRUE}
+MA1 <- v1[!is.na(v1)]
+acf(MA1, lag.max = 20, plot = FALSE)
+```
+
+For $n = 50$, we see that sample ACF at lag 20 is -0.004 which is greater than the sample ACF at lag 20 for $n = 500$. This indicates that smaller values of n could affect the results since there are less samples. 
+
+#### Invidivual Problem: 
+
+##### 1. Let $A$ be a matrix and let $z$ be a random vector with covariance matrix $B$. Recall that the covariance matrix for $Az$ is $V[Az] = ABA^T$ . If you are in PSTAT 174, verify this when $A,\; B\in \mathbb{R}^{2 \times 2}$ and $z\in\mathbb{R}^2$ ;if you are in PSTAT 274, verify this for $A,\; B\in \mathbb{R}^{n \times n}$and $z\in\mathbb{R}^n$ where $n\geq1$.
+
+Proof: [PSTAT 174] Suppose $A,\; B\in \mathbb{R}^{2 \times 2}$ and $z\in\mathbb{R}^2$ where $A = \begin{pmatrix} a_{11} & a_{12} \\ a_{21} & a_{22} \end{pmatrix}$ and $z = \begin{pmatrix} z_1 \\ z_2 \end{pmatrix}$. Let $E[z] = \begin{pmatrix} E[z_1] \\ E[z_2] \end{pmatrix}.$ Then we have that 
+\begin{eqnarray} V[Az] &=& E[(Az - E[Az])(Az - E[Az])^T] \\ &=& E[(Az - AE[z])(Az - AE[z])^T] \\ &=& E[A(z - E[z])(z - E[z])^TA^T] \\ &=& AE[(z-E[z])(z-E[z])^T]A^T \\ &=& A\text{Cov}(z)A^T \end{eqnarray} 
+where $\text{Cov}(z) = \begin{pmatrix} \text{Var}(z_1) & \text{Cov}(z_1, z_2) \\ \text{Cov}(z_2, z_1) & \text{Var}(z_2) \end{pmatrix}$. Let $B = \text{Cov}(z)$. Therefore, it is proven that $V[Az] = ABA^T$ holds true when $A,\; B\in \mathbb{R}^{2 \times 2}$ and $z\in\mathbb{R}^2 \; .\checkmark$ 
+
+Proof: [PSTAT274] Suppose $A,\; B\in \mathbb{R}^{n \times n}$ and $z\in\mathbb{R}^n$ where $A = \begin{pmatrix} a_{11} & a_{12} & ... & a_{1n}\\ a_{21} & a_{22} & ... & a_{2n} \\ \vdots & \vdots & & \vdots \\ a_{n1} & a_{n2} & ... & a_{nn} \end{pmatrix}$ and $z = \begin{pmatrix} z_1 \\ z_2 \\ \vdots \\ z_n \end{pmatrix}$ for $n\geq1$. Let $E[z] = \begin{pmatrix} E[z_1] \\ E[z_2] \end{pmatrix}.$ Then we have that 
+\begin{eqnarray} V[Az] &=& E[(Az - E[Az])(Az - E[Az])^T] \\ &=& E[(Az - AE[z])(Az - AE[z])^T] \\ &=& E[A(z - E[z])(z - E[z])^T A^T] \\ &=& AE[(z-E[z])(z-E[z])^T]A^T \\ &=& A\text{Cov}(z)A^T \end{eqnarray}
+where $\text{Cov}(z) = \begin{pmatrix} \text{Var}(z_1) & \text{Cov}(z_1, z_2) & ... & \text{Cov}(z_1, z_n) \\ \text{Cov}(z_2, z_1) & \text{Var}(z_2) & ... & \text{Cov}(z_2, z_n) \\ \vdots & \vdots & & \vdots \\ \text{Cov}(z_n, z_1) & \text{Cov}(z_n, z_2) & ... & \text{Var}(z_n)\end{pmatrix}$. Let $B = \text{Cov}(z)$. Therefore, it is proven that $V[Az] = ABA^T$ holds true when $A,\; B\in \mathbb{R}^{n \times n}$ and $z\in\mathbb{R}^n$ for $n\geq1 \; . \checkmark$ 
+
+##### 2. Let $\sum \in \mathbb{R}^{n \times n}$ be an $n \times n$ covariance matrix for a multivariate normal RV, and let U be a matrix such that $UU^T = \sum$. If $z$ is a vector of $n$ IID $N(0,1)$ random variables, $Uz$ will follow a MVN distribution. What is the covariance matrix for $Uz$? (Use the previous part.)
+
+Sol. Given $z_1, ..., z_n\stackrel{iid}{\sim} N(0,1)$, then the joint density of $z = (z_1, ..., z_n)^T$ is a MVN $z\sim N(0,1)$ since $E[z] = (E[z_1], ... , E[z_n])^T = (0, ..., 0)^T$ and $ E[(z_i - E[z_i])(z_j - E[z_j])]$ = $E[z_iz_j] = \begin{cases} 1 & \text{if}\; i=j \\ 0 & \text{if} \; i\neq j \end{cases}$ which means $\text{Cov}(z) = I$, the identity matrix. Since $z{\sim} N(0,I) \Longrightarrow Uz \sim N(0, \Sigma = UU^T)$, then using the theorem proven in problem 1 from above: $\text{Cov}(Uz) = U\text{Cov}(z)U^T = UIU^T = UU^T = \Sigma$. So the covariance matrix for $Uz$ is $\Sigma$. 
+
+##### 3. Assume that $\sum_{ij} = e^{\frac{-|i-j|}{\phi}}$ for some $\phi > 0$ with $\sum \in \mathbb{R}^{10 \times 10}$ (this is known as exponential covariance). In R, you can find a matrix $U$ such that$UU^T = \sum$ with $\text{t}(\text{chol} (\sum))$. And as shown in the lecture examples, you can draw IID normals with $\text{rnorm}$. With this in mind and using the previous part, write R code to draw samples from a MVN distribution with mean 0 and covariance matrix $\sum$. Try a few values pf $\phi$ (e.g., 1, 10, 100) and visualize the results. Comment on the effect of $\phi$. 
+
+```{r, fig.align = 'center', echo = TRUE}
+sigma <- function(phi) {
+  vals <- vector(mode = "numeric")
+  for (i in 1:10) {
+    for (j in 1:10) {
+      vals <- c(vals, exp((-abs(i-j)/phi)))
+    }
+  }
+  sigma <- matrix(vals, nrow = 10, ncol = 10, byrow = TRUE)
+  return(sigma) 
+}
+
+# Plots of samples from a MVN distribution with mean 0 and covariance matrix "sigma"
+set.seed(1)
+par(mfrow = c(3, 1))
+samples1 <- rnorm(500, 0, sigma(1))
+plot.ts(samples1, ylim = c(-3, 3), main = "Plot of samples with phi = 1", 
+        ylab = "Samples with phi = 1")
+
+samples10 <- rnorm(500, 0, sigma(10))
+plot.ts(samples10, ylim = c(-3, 3), main = "Plot of samples with phi = 10", 
+        ylab = "Samples with phi = 10")
+
+samples100 <- rnorm(500, 0, sigma(100))
+plot.ts(samples100, ylim = c(-3, 3), main = "Plot of samples with phi = 100", 
+        ylab = "Samples with phi = 100")
+```
+
+From the plots avove, we could see that there is a greater variance within the sample values over time as $\phi$ increases. 
+
+#### Additional work for PSTAT 274
+Truthfully, I am still undecided about which career to pursue after graduation. However, in regards to my career path thus far, I am currently a Performance and Attribution intern at an investment management firm. For my role, I have constantly utilized the concept of time series to create performance and attribution reports for the portfolio managers at my firm. Thus, I hope to gain a solid understanding of Time Series from this course since it is essential to my career advancement if I choose to work full time as a Performance and Attribution Analyst. Career interests aside, I would like to learn more in depth about the Forecasting topic of time series. I believe the topic of forecasting would be very useful towards personal investing and portfolio management.  

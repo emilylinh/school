@@ -1,0 +1,116 @@
+---
+title: "PSTAT 174 & 274 - Homework 4"
+author: "Emily Lu"
+date: "11/18/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(astsa)
+```
+
+#### 1. (Problem 4.9) Figure 4.22 shows the biyearly smoothed (12-month moving average) number of sunspots from June 1749 to December 1978 with $n = 459$ points that were taken twice per year; the data are contained in sunspotz. With Example 4.13 as a guide, perform a periodogram analysis identifying the predominant periods and obtaining confidence intervals for the identified periods. Interpret your findings. (For an example of how to compute a 95 percent confidence interval for an identified period, see the calculations in the first paragraph of page 188. These calculations follow from Equation (4.51))
+
+```{r}
+sp <- spec.pgram(sunspotz, taper = 0, kernel('daniell', 4), log = 'no')
+head(n=2, order(decreasing = TRUE, sp$spec)) # predominant frequencies
+abline(v = sp$freq[c(24,23)], lty=2)
+sortedSpecs <- sort(sp$spec, decreasing = TRUE)[c(1,2,4)]
+
+CI <- function(peakSpec) {
+  u <- qchisq(0.025, sp$df)
+  l <- qchisq(0.975, sp$df)
+  c((2*peakSpec)/l, (2*peakSpec)/u)
+}
+
+CI(sortedSpecs[1])
+CI(sortedSpecs[2])
+CI(sortedSpecs[3])
+
+p1 <- sp$freq[sp$spec == sortedSpecs[1]]
+p2 <- sp$freq[sp$spec == sortedSpecs[2]]
+p3 <- sp$freq[sp$spec == sortedSpecs[3]]
+
+cat('Cycles are occuring at', 1/p1, 1/p2, 1/p3, 'years.')
+
+```
+From the periodogram analysis, we found that the major peak is at 10 years cycle and the confidence interval for the identified period is [821.0225, 3247.384]. 
+
+#### 2. (Problem 4.8) Suppose $x_t$ and $y_t$ are stationary zero-mean time series with $x_t$ independent of $y_s$ for all $s$ and $t$. Consider the product series $$z_t = x_t y_t.$$ Prove the spectral density for $z_t$ can be written as $$f_z(\omega) = \int_{-\frac{1}{2}}^{\frac{1}{2}} f_x(\omega - v)f_y(v) dv.$$ 
+
+Given $x_t$ and $y_t$ are stationary zero-mean time series with $x_t$ independent of $y_s$ for all $s$ and $t$, then the auto-covariance function for $x_t$ is $\gamma_x(h) = cov(x_{t+h}, x_t) = Var_x(t) = E[x_{t+h}x_t]$ with $h=0$ and for $y_t$ is $\gamma_y(h) = cov(y_{t+h}, y_t) = Var_y(t) = E[y_{t+h}y_t]$ with $h=0$. Then, the auto-covariance function of $z_t = x_t y_t$ is $\gamma_z(h) = cov(z_{t+h}, z_{t}) = cov(x_{t+h}y_{t+h}, x_t y_t) = Var(x_t y_t) = Var(x_t)Var(y_t)$ for $h=0$. By property 4.1, we have that $\gamma_x(0) = \int_{-1/2}^{1/2}f(v) dv$ and $\gamma_u(0) = \int_{-1/2}^{1/2} f(v) dv$. Then by the convolution of the Fourier transform, we have $f_z(\omega) = \int_{-\frac{1}{2}}^{\frac{1}{2}} f_x(\omega - v)f_y(v) dv.$ 
+
+#### 3. For the Reyk_temps temperature data (see the lecture 12 R code), complete the following:
+
+####  a. Plot a periodogram.
+
+```{r, fig.height=4}
+reyk_temps <- read.delim("Reyk_temps.txt", sep = ',')
+temps <- reyk_temps[,2]
+par(cex.main = 1, cex.lab = 0.8, cex.sub = 0.8)
+orig <- spec.pgram(temps) #original, non-smoothed version of temps periodogram
+head(n=2, order(decreasing = TRUE, orig$spec)) # predominant frequencies
+abline(v = sp$freq[c(70, 71)], lty=2) 
+
+diff1 <- spec.pgram(diff(temps)) #first difference periodogram -- accentuates shorter periods 
+head(n=2, order(decreasing = TRUE, diff1$spec)) # predominant frequencies
+abline(v = sp$freq[c(5067, 70)], lty=2) 
+
+k <- kernel("modified.daniell", 183) # filter weights
+soif <- kernapply(temps, k) 
+soif1 <- spec.pgram(soif) #moving average over a year -- accentuates longer periods
+head(n=2, order(decreasing = TRUE, soif1$spec)) # predominant frequencies
+abline(v = sp$freq[c(1,2)], lty=2) 
+```
+  
+####  b. Plot a smoothed periodogram.
+
+```{r}
+sp <- spec.pgram(temps, taper = 0, kernel('daniell', 4))
+
+head(n=2, order(decreasing = TRUE, sp$spec)) # predominant frequencies
+abline(v = sp$freq[c(72, 73)], lty=2)
+```
+
+####  c. Plot an AR(p) spectral representation of the periodogram (as in the lecture 11 R code).
+
+```{r, fig.height=4}
+par(mfrow = c(3, 1))
+orig <- spec.pgram(temps, log = "no")  
+head(n=2, order(decreasing = TRUE, orig$spec)) # predominant frequencies
+abline(v = sp$freq[c(70, 71)], lty=2) 
+
+spaic <- spec.ar(temps, log = "no") # best fitting AR 
+temps.ar = ar(temps) # estimates and AICs
+plot(temps.ar$aic[-1], type="o", ylab= 'AIC', xlab='AR(p) order') # plot AIC
+```
+
+####  d. Comment on what appear to be the main period(s) in all of the periodograms.
+
+On all the periodograms, it appears that 70 is the main period. 
+  
+####  e. Repeat parts a through d with a 1-year-moving-average smoothed version of the Reyk_temps temperature data.
+
+```{r}
+# part a, periodogram of 1-year-moving-average smoothed version of Reyk_temps temperature data
+k <- kernel('daniell', c(1, 1, 1))
+smooth.temps <- spec.pgram(temps, kernel = k, taper = 0)
+smoothTemps <- data.frame(freq = smooth.temps$freq, spec = smooth.temps$spec)
+orig <- spec.pgram(smoothTemps)
+head(n=2, order(decreasing = TRUE, orig$spec)) # predominant frequencies
+abline(v = sp$freq[c(6401, 6402)], lty=2) 
+
+# part b, a smoothed periodogram of 1-year-moving-average smoothed version of Reyk_temps temperature data
+smoothedMA <- spec.pgram(smoothTemps, taper = 0, kernel('daniell', 4))
+abline(v = sp$freq[c(6401, 6402)], lty=2) 
+
+# part c, an AR(p) spectral representation
+par(mfrow = c(3, 1), cex.main = 1, cex.lab = 0.8, cex.sub = 0.8, mar = c(3,3,3,3))
+spec.pgram(smoothTemps, log = "no")  
+smoothTemps.ar <- ar(smoothTemps) # estimates and AICs
+plot(smoothTemps.ar$aic[-1], type="o", ylab= 'AIC', xlab='AR(p) order')
+```
+For the 1-year-moving-average smoothed version of the Reyk_temps temperature data, there appears be no dominant period in the periodograms. 

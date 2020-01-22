@@ -1,0 +1,34 @@
+---
+title: "PSTAT 174 & 274 - Homework 3"
+author: "Emily Lu"
+date: "11/2/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(astsa)
+```
+
+#### 1. (Problem 3.27) Suppose \begin{eqnarray} y_t = \beta_0 + \beta_1 t + ... + \beta_q t^q + x_t, \; \beta_q \neq 0, \end{eqnarray} where x_t is stationary. First, show that $\nabla^k x_t$ is stationary for any $k = 1, 2, ...,$ and then show that $\nabla^k y_t$ is not stationary for $k < q$, but is stationary for $k \geq q$. 
+
+```{r}
+https://www.chegg.com/homework-help/questions-and-answers/suppose-yt-betao-betat-beta2t-2-beta3t-2-xt-beta3-notequalto-xt-stationary-first-show-nabl-q15258433
+```
+
+#### 2. (Problem 3.32) 3.32 Crude oil prices in dollars per barrel are in oil. Fit an ARIMA($p, d, q$) model to the growth rate performing all necessary diagnostics. Comment.
+
+```{r}
+plot.ts(oil)
+fit <- arima(log(oil), order = c(1, 1, 1))
+fit
+
+https://www.chegg.com/homework-help/questions-and-answers/time-series-statistics-question-please-answer-problem-332-pictured-refers-oil-data-built-d-q36321185
+```
+
+#### 3. (Problem 3.46) Use the Projection Theorem to derive the Innovations Algorithm, Property 3.6, equations (3.77)-(3.79). Then, use Theorem B.2 to derive the $m$-step-ahead forecast results given in (3.80) and (3.81).
+
+https://www.stat.berkeley.edu/~bartlett/courses/153-fall2010/lectures/10.pdf
+
+#### Individual Problem : Build an ARIMA(p,d,q) model for the Reyk_temps data from lecture 5 (available on the webpage), and use the model to forecast temperature for the next 5 years. Note: You could try a seasonal ARIMA model, though it is not necessary. 
+

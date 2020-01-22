@@ -1,0 +1,86 @@
+---
+title: "PSTAT 174/274 - Homework 5"
+author: "Emily Lu"
+date: "12/4/2019"
+output: pdf_document
+---
+
+#### 1. (Problem 5.6) Weekly crude oil spot prices in dollars per barrel are in oil; see Problem Problem 2.10 and Appendix R for more details. Investigate whether the growth rate of the weekly oil price exhibits GARCH behavior. If so, fit an appropriate model to the growth rate.
+
+```{r}
+library(astsa)
+library(fGarch)
+
+par(cex.main = 1, cex.lab = 0.8, cex.sub = 0.8, mar = c(3,3,3,3))
+plot(oil, main = "Weekly Crude Oil Prices", ylab = "Oil Prices")
+plot(log(oil), main = "Log-Weekly Crude Oil Prices")
+
+# Plot of oil returns
+oilRet <- diff(log(oil))
+plot(oilRet, main = "Weekly Crude Oil Returns")
+acf2(oilRet)
+
+# GARCH fit
+summary(garchFit(~arma(1,0)+garch(1,1), oilRet))
+```
+From the plot above, we could see that the return rates are relatively stable with short-term bursts of votality notably around 2009. Since time series does exhibit time-varying volatility and volatility clustering, we could fit a GARCH model. 
+
+#### 2. (Problem 6.1) Consider a system process given by $$x_t = -.9x_{t-2} + w_t \;\; t = 1,...,n$$ where $x_0~N(0,\sigma_0^2), x_{-1}~N(0,\sigma_1^2)$ and $w_t$ is a Gaussian white noise with variance $\sigma_w^2$. The system process is observed with noise, say, $$y_t = x_t + v_t,$$ where $v_t$ is Gaussian white noise with variance $\sigma_v^2.$ Further, suppose $x_0, x_{-1},$ {$w_t$} and {$v_t$} are independent. 
+
+  (a) Write the system and observation equations in the form of a state space model.
+ $x_t = -.9x_{t-2} + w_t$ 
+ $y_t = x_t + v_t$ 
+  
+  (b) Find the values of $\sigma_0^2$ and $\sigma_1^2$ that make the observations, $y_t$, stationary. 
+  
+For $y_t$, $x_t$ must also be stationary so we have that 
+
+$\gamma_x(0) = Cov(x_t, x_t) = Cov(-0.9 x_{t-2}+w_{t}, -0.9 x_{t-2}+w_{t}) = 0.81 Cov(x_{t-2}, x_{t-2}) + \sigma_w^2 = \frac{\sigma^2_w}{0.19}$
+
+which implies $\sigma_0^2=\sigma_1^2=\frac{\sigma^2_w}{0.19}.$
+  
+  (c) Generate $n=100$ observations with $\sigma_w = 1, \sigma_v = 1$ and using the values of $\sigma_0^2$ and $\sigma_1^2$ found in (b). Do a time plot of $x_t$ and of $y_t$ and compare the two processes. Also compare the sample ACF and PACF of $x_t$ and of $y_t$. 
+  
+```{r}
+set.seed(1)
+n <- 100
+w <- rnorm(n+1, 0, 1)
+v <- rnorm(n, 0, 1)
+x <- rnorm(n-1, 0, 1/0.19) + w
+y <- x + v
+
+plot.ts(x)
+plot.ts(y)
+acf2(x)
+acf2(y)
+```
+According to the time series plot, $y_t$ has a smaller variance than $x_t$. As for the ACF and PACF plots of $y_t$ and $x_t$, there is not much difference in comparison.
+
+  (d) Repeat (c), but with $\sigma_v = 10$. 
+
+```{r}
+set.seed(1)
+n <- 100
+w <- rnorm(n+1, 0, 1)
+v <- rnorm(n, 0, 10)
+x <- rnorm(n-1, 0, 1/0.19) + w
+y <- x + v
+
+plot.ts(x)
+plot.ts(y)
+acf2(x)
+acf2(y)
+```  
+According to the time series plot, $y_t$ has a bigger variance than $x_t$. As for the ACF and PACF plots of $y_t$ and $x_t$, there is not much difference in comparison.  
+
+#### Individual Problem: In section 6.3 of SS (Maximum Likelihood Estimation), Equation (6.60) gives the likelihood function in the linear Gaussian state-space model. One fact that is needed to write the likelihood in the form of Equation (6.60) is that distinct innovations, defined by Equation (6.23), have zero covariance. (Because the innovations are jointly Gaussian, zero covariance implies independence.) Show that distinct innovations (defined by Equation (6.23)) have zero covariance.
+
+The distinctive innovations defined by eqn. 6.23 is 
+$\epsilon_t = y_t - E(y_t|y_{1:t-1}) = y_t - A_tx_t^{t-1}- \Gamma u_t$. We want to show that the distinct innovations have zero covariance. Proof:
+Given 
+
+$E[\epsilon_t] = E[y_t - A_tx_t^{t-1}- \Gamma u_t] = E[A_tx_t + \Gamma u_t + v_t - A_t x_t^{t-1} - \Gamma u_t] = E[A_t(x_t - x_t^{t-1}) + v_t] = A_t[E(x_t) - E(x_t^{t-1})] + E[v_t] = A_t[E(x_t) - E(E(x_t|y_1,...,y_{t-1}))] + E[v_t] = A_t[E(x_t) - E(x_t)] + 0 = 0.$
+
+then $Cov(\epsilon_t, \epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - E[\epsilon_{t}]E[\epsilon_{t+h}] = E[\epsilon_{t}]E[\epsilon_{t+h}] - E[\epsilon_{t}]E[\epsilon_{t+h}] = 0$ since $\epsilon_{t}, \epsilon_{t+h}$ is independent by definition. 
+
+Additionally, since the innovations are defined to independent Gaussian random vectors, then by definition, the $Cov(\epsilon_t, \epsilon_{t+h})$ for every $h=1,..., n$ is 0. 
