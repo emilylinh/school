@@ -1,0 +1,52 @@
+---
+title: "Homework 4"
+author: "Emily Lu"
+date: "5/7/2019"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+#### 1. This problem uses the data set UN11 from the alr4 package.
+
+```{r UN11, echo = TRUE}
+library(alr4)
+attach(UN11)
+```
+
+##### a) Examine the scatterplot matrix for (fertility, log(ppgdp), pctUrban), and comment on the marginal relationships. 
+
+```{r UN11 scatterplot matrix, echo = TRUE}
+scatterplotMatrix(~fertility + log(ppgdp) + pctUrban)
+```
+
+From the scatterplot matrix above, we can see the following: a negative correlation between fertility and pctUrban, negative correlation between fertility and log(ppgdp), and positive correlation between log(ppgdp) and pctUrban. 
+
+##### b) Fit the two simple regressions fertility $\sim$ log(ppgdp) and fertility $\sim$ pctUrban, and verify that the slopes are significantly different from zero at any conventional level of significance.
+
+```{r UN11 fits, echo = TRUE}
+fit1 <- lm(fertility ~ log(ppgdp) + pctUrban)
+summary(fit1)
+```
+
+From the summary above, we can see that the slopes are significantly different from zero at any conventional level of significance. 
+
+##### c)  Obtain the added-variable plots for both predictors. Based on the added-variable plots, does log(ppgdp) seem to be useful after adjusting for pcturban, and similarly, does pcturban seem to be useful after adjusting for log(ppgdp)?
+
+```{r UN11 AV plot, echo = TRUE}
+avPlots(fit1)
+```
+
+The AV plot for log(ppgdp) after pctUrban shows that log(ppgdp) is still correlated with fertility even after accounting for the effects of pcturban. However, that of pctUrban after log(ppgdp) shows that it is not useful when log(ppgdp) is already in the model.
+
+#### 2. Consider a multiple linear regression model with two continuous predictors: 
+\makebox[\linewidth]{$ Y_{i} = \beta_{0} + \beta_{1}x_{i1} + \beta_{2}x_{i2} + \epsilon_{i}, \ \epsilon\stackrel{i.i.d.}\sim N (0,\sigma^2)$}
+
+##### a)  Suppose that $x_{i1}$ and $x_{i2}$ are exactly related in that $x_{i1} = 2.2x_{i2}$ for all $i$. For example, $x_{i2}$ could be weight in kilograms and $x_{i1}$ weight in pounds for the $i$-th individual. Describe the appearance of the added-variable plot for $x_{i2}$ after adjusting for $x_{i1}$.
+
+The added-variable plot for $x_{i2}$ after adjusting for $x_{i1}$ would have a vertical slope. 
+
+##### b)  Suppose instead that $x_{i1}$ and $x_{i2}$ are not perfectly correlated, but that $Y_{i} = 3x_{i1}$, i.e. $Y_{i}$ is perfectly correlated with $x_{i1}$. Describe the appearance of the added-variable plot for $x_{i2}$.
+
+Given that $x_{i1}$ and $x_{i2}$ are not perfectly correlated, the added-variable plot for $x_{i2}$ would not have a significant slope. 

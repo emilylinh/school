@@ -1,0 +1,124 @@
+---
+title: "Homework 7"
+author: "Emily Lu"
+date: "6/4/2019"
+output: pdf_document
+---
+
+##### 1. The data set mantel in the alr4 package has a response Y and three predictors X1, X2 and X3, apply the forward selection and backward elimination algorithms, using AIC as a criterion function. Also, find AIC and BIC for all possible models and compare results. Which appear to be the active regressors?
+
+**Forward Selection** procedure adds variables one at a time until the chosen information criterion cannot be decreased anymore. 
+```{r 1, echo = TRUE}
+library(alr4)
+attach(mantel)
+
+# With AIC
+mod0 <- lm(Y ~ 1, data = mantel)
+modfull <- lm(Y ~., data = mantel)
+
+step(mod0, scope = list(lower = mod0, upper = modfull),
+     direction = 'forward')
+
+# With BIC
+n <- length(mantel$Y)
+step(mod0, scope = list(lower = mod0, upper = modfull),
+     direction = 'forward', k = log(n), trace = 0)
+```
+With the forward selection for both AIC and BIC, the final model only has X3 as an active regressor. 
+
+**Backward Elimination:**
+```{r 1b, echo = TRUE}
+# With AIC
+step(modfull, scope = list(lower = mod0, upper = modfull),
+     direction = 'backward')
+
+# With BIC
+step(modfull, scope = list(lower = mod0, upper = modfull),
+     direction = 'backward', k = log(n), trace = 0)
+```
+With the backward elimination for both AIC and BIC, X1 and X2 appears to be the active regressors. 
+
+##### 2. In an unweighted regression problem with n = 54, p = 4, the results included $\hat{\sigma}$ = 4.0$ and the following statistics for four of the cases: 
+$e_{i}$ | $h_{ii}$
+------  | -------
+1.000   | 0.900
+1.732   | 0.750
+9.000   | 0.250
+10.295  | 0.185
+##### For each of these four cases, compute $r_{i}$, $D_{i}$, and $t_{i}$. Test each of the four cases to be an outlier. Make a qualitative statement about the influence of each case on the analysis.
+```{r 2 ri, echo = TRUE}
+ei <- c(1, 1.732, 9, 10.295)
+hii <- c(.9, .75, .25, .185)
+ri <- ei[1]/(4*sqrt(1-hii[1]))
+Di <- ri[1]^2*hii[1]/4 * 1/(1-hii[1]) 
+ti <- ri[1]*sqrt((49)/(50-ri[1]^2))
+
+for(i in c(2:4)){
+  r <- ei[i]/(4*sqrt(1-hii[i]))
+  ri <- c(ri, r)
+  D <- ri[i]^2*hii[i]/4 * 1/(1-hii[i]) 
+  Di <- c(Di, D)
+  t <- ri[i]*sqrt((49)/(50-ri[i]^2))
+  ti <- c(ti, t)}
+```
+```{r, echo = FALSE}
+cat('For i = 1, 2, 3, 4: ', '\n')
+cat('r_i = ', ri, '\n') 
+cat('D_i = ', Di, '\n')
+cat('t_i = ', ti, '\n')
+```
+Based on the standardized residuals, $r_{i}$, and unstandardized residuals, $t_{i}$, $3^{rd}$ and $4^{th}$ are flagged as potential outliers since $r_{3}, \; r_{4}, \; t_{3}, \; t_{4} > 2$. Futhermore, Cook's distance measure, $D_{i}$, which summarizes how much all the fitted values changes when the $i^{th}$ observation is deleted, flags $1^{st}$ case to be almost certainly influential. 
+
+##### 3. The lathe1 data set from the alr4 package contains the results of an experiment on characterizing the life of a drill bit in cutting steel on a lathe. Two factors were varied in the experiment, Speed and Feed rate. The response is Life, the total time until the drill bit fails, in minutes. The values of Speed and Feed in the data have been coded by computing $$\text{Speed} = \frac{\text{Actual speed in feet per minute} - 900}{300}$$ $$\text{Feed} = \frac{\text{Actual feed rate in thousandths of an inch per revolution} - 13}{6}$$ 
+
+##### a. Starting with the full second-order model $$E[\text{Life}|\text{Speed, Feed}] = \beta_{0} + \beta_{1}\text{Speed} + \beta_{2}\text{Feed} + \beta_{11}\text{Speed}^2 + \beta_{22}\text{Feed}^2 + \beta_{12}\text{Speed*Feed},$$ use the Box–Cox method to show that an appropriate scale for the response is the logarithmic scale.
+
+```{r 3a, echo = TRUE}
+library(alr4)
+attach(lathe1)
+model <- lm(Life ~ Speed + Feed + I(Speed^2) + I(Feed^2) + Speed:Feed)
+boxCox(model)
+
+# We can confirm with the summary function:
+summary(powerTransform(model))
+```
+From the Box-Cox method, we see that $\lambda$ includes 0; therefore, an appropriate scale for the response is the logarithmic scale. 
+
+##### b. Find the two cases that are most influential in the fit of the quadratic mean function for log(Life), and explain why they are influential. Delete these points from the data, refit the quadratic mean function, and compare with the fit with all the data.
+
+```{r 3b, echo = TRUE}
+ftmodel <- lm(log(Life) ~ Speed + Feed + I(Speed^2) + I(Feed^2) + Speed*Feed)
+
+# find influential cases 
+ft.cooks <- cooks.distance(ftmodel)
+which(ft.cooks > 4/(length(Life)-2-1))
+influenceIndexPlot(ftmodel, vars = 'Cook', 
+                   id = list(location = "avoid", n = 2, cex = 0.7))
+
+# how these influential points affect the estimated coeffienct 
+betahat.not.i <- influence(ftmodel)$coefficients
+panel.fun <- function(x, y, ...){
+  points(x, y, ...)
+  dataEllipse(x, y, plot.points=FALSE, levels=c(.90))
+  showLabels(x, y, labels=rownames(lathe1),
+             method="mahal", n=4) }
+pairs(betahat.not.i, panel=panel.fun)
+
+# delete influential points from data 
+noInfluence <- lathe1[c(1:8,11:20),]
+
+# refitted quadratic mean function
+full.lathe1 <- lm(log(Life) ~ Speed + Feed + I(Speed^2) + I(Feed^2) + Speed:Feed,
+                  data = noInfluence)
+```
+**Data with Influential Points Vs. Data with No Influential Points**
+```{r 3b no influential, echo = TRUE}
+# influential points included: 
+summary(ftmodel)
+avPlots(ftmodel)
+
+# no influential points: 
+summary(full.lathe1)
+avPlots(full.lathe1)
+```
+The two most "influential in the fit of the quadratic mean function function for log(Life)" cases are 9 and 10. These cases are influential because they are outliers, i.e. do not follow the general trend among most of the points. After removing the influential cases, there seems to be not much of a difference. 

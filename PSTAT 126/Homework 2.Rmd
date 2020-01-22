@@ -1,0 +1,165 @@
+---
+title: "PSTAT 126 - Homework 2"
+author: "Emily Lu"
+date: "16 April, 2019"
+output:
+  pdf_document: default
+---
+### 1. The data set UN11 in the alr4 package contains several variables, including ppgdp, the gross national product per person in U.S. dollars, and fertility, the birth rate per 1000 females, from the year 2009. The data are for 199 localities, and we will study the regression of fertility on ppgdp.
+```{r UN11, echo = TRUE}
+library(alr4)
+data("UN11")
+fertility <- UN11$fertility
+ppgdp <- UN11$ppgdp
+```
+#### (a) Identify the predicator and response. 
+The predictor is ppgdp and the response is fertility. 
+
+#### (b)  Draw the scatterplot of fertility against ppgdp and describe the relationship between these two variables. Is the trend linear?
+```{r UN11 scatterplot, echo = TRUE}
+plot(ppgdp, fertility,
+     xlab = 'Per Capita Gross Domestic Product (US Dollars)', 
+     ylab = 'Fertility (# of Children per Woman)', 
+     main = 'UN11: Fertility vs. PPGDP', 
+     cex.main = 1,
+     cex.lab = 0.8)
+```
+
+The trend does not appear linear. 
+
+#### (c) Replace both variables by their natural logarithms and draw another scatterplot. Does the simple linear regression model seem plausible for a summary of this graph?
+```{r UN11 log, echo = TRUE}
+NLppgdp <- log(ppgdp)
+NLfertility <- log(fertility)
+
+plot(NLppgdp, NLfertility, xlab = 'Per Capita Gross Domestic Product (US Dollars)',
+     ylab = 'Fertility (# of Children per Woman)', 
+     main = 'UN11: Natural Log. of Fertility vs. Natural Log. of PPGDP', 
+     cex.main = 1,
+     cex.lab = 0.8)
+```
+
+After taking the natural logarithms of both variables, the simple linear regression model does seem plausible for a summary of the graph. 
+
+### 2. The data set prostate in the faraway package is from a study of 97 men with prostate cancer. Interest is in predicting lpsa (log prostate specific antigen) with lcavol (log cancer volume).
+```{r prostate, echo = TRUE}
+library(faraway)
+data("prostate")
+x <- prostate$lcavol
+y <- prostate$lpsa 
+```
+#### (a) Draw a scatterplot - does a simple linear regression model seem reasonable?
+```{r prostate scatterplot, echo = TRUE}
+plot(x, y, 
+     xlab = "Log Cancer Volume",
+     ylab = "Log Prostate Specific Antigen",
+     main = "Log Cancer Volume vs. Log Prostate Specific Antigen",
+     cex.main = 1,
+     cex.lab = 0.8)
+```
+
+This scatterplot shows that these data set can be a reasonable simple linear regression model since the trend appears to have a linearity, normality and constant variance.
+
+#### (b) Without using the function lm, compute the values $\bar{x}$, $\bar{Y}$, $S_{XX}$, $S_{YY}$, and $S_{XY}$ .Compute the ordinary least squares estimates of the intercept and slope for the simple linear regression model, and draw the fitted line on your plot from part a).
+
+From the computations below, we have that $\bar{x}=1.35001$, $\bar{Y}=2.478387$, $S_{XX}=133.359$, $S_{YY}=127.9176$, and $S_{XY}=95.92784$. For the simple linear regression model, the ordinary least squares estimates of the intercept is 1.5072979 and the ordinary least squares estimates of the slope is 0.7193201. 
+```{r prostate sample means, echo = TRUE}
+# sample means
+xbar <- mean(x)
+ybar <- mean(y)
+c(xbar, ybar)
+```
+
+```{r prostate sum of squares, echo = TRUE}
+# sum of squares
+Sxx <- sum((x - xbar)^2)
+Syy <- sum((y - ybar)^2)
+Sxy <- sum((x - xbar)*(y - ybar))
+c(Sxx, Syy, Sxy)
+```
+
+```{r prostate lse of slope, echo = TRUE}
+# intercept and slope
+b1 <- Sxy/Sxx
+b0 <- ybar - b1*xbar
+c(b0, b1)
+```
+```{r prostate plotted regression line, echo = TRUE}
+plot(x, y, 
+     xlab = "Log Prostate Specific Antigen",
+     ylab = "Log Cancer Volume",
+     main = "Log Cancer Volume vs. Log Prostate Specific Antigen",
+     cex.main = 1,
+     cex.lab = 0.8)
+abline(b0, b1)
+```
+
+#### (c) Obtain the estimate of $\sigma^{2}$ and find the estimated standard errors of $\hat{\beta}_{0}$ and $\hat{\beta}_{1}$. Also find the estimated covariance between these two estimates. Carry out t-tests for the two null hypotheses $\beta_{0}$ = 0 and $\beta_{1}$ = 0, reporting the value of the test statistic and a p-value in each case.
+```{r prostate estimate of var, echo = TRUE}
+# estimate of sigma squared (MSE)
+yhat <- b0 + b1*x
+n <- length(y)
+mse <- (1/(n-2))*sum((y-yhat)^2)
+mse
+```
+```{r prostate SE of B0 hat, echo = TRUE}
+# estimated errors of B0 hat
+SEb0hat <- sqrt(mse*(1/n + (xbar^2)/Sxx))
+SEb0hat
+```
+```{r prostate SE of B1 hat, echo = TRUE}
+# estimated errors of B1 hat
+SEb1hat <- sqrt(mse/Sxx)
+SEb1hat
+```
+```{r prostate estimated covar, echo = TRUE}
+# estimated covariance between these two estimates 
+covb0b1 <- -xbar*mse/Sxx
+covb0b1
+```
+```{r prostate t-test for B0, echo = TRUE}
+# test statistic and p-value for B0 = 0
+testStat_b0 = b0/SEb0hat
+pValue_b0 = 2*pt(abs(testStat_b0), df = n-2, lower.tail = F)
+c(testStat_b0, pValue_b0)
+```
+```{r prostate t-test for B1, echo = TRUE}
+# test statistic and p-value for B1 = 0 
+testStat_b1 = b1/SEb1hat
+pValue_b1 = 2*pt(q = testStat_b1, df = n-2, lower.tail = F)
+c(testStat_b1, pValue_b1)
+```
+
+### 3. The data set ftcollinstemp in the alr4 package gives the mean temperature in the fall of each year, defined as September 1 to November 30, and the mean temperature in the following winter, defined as December 1 to the end of February in the following calendar year, in degrees Fahrenheit, for Ft. Collins, CO (Colorado Climate Center, 2012). These data cover the time period from 1900 to 2010. The question of interest is: Does the average fall temperature predict the average winter temperature?
+```{r ftcollinstemp, echo = TRUE}
+library(alr4)
+data("ftcollinstemp")
+x <- ftcollinstemp$fall
+y <- ftcollinstemp$winter
+```
+#### (a) Use the lm function in R to fit the regression of the response on the predictor. Draw a scatterplot of the data and add your fitted regression line.
+```{r ftcollinstemp scatterplot, echo = TRUE}
+fit1 <- lm(y~x)
+plot(x, y, 
+     xlab = "Average Fall Temperatures",
+     ylab = "Average Winter Temperatures",
+     main = "Average Winter Temperatures vs. Average Fall Temperatures",
+     cex.main = 1, 
+     cex.lab = 0.8)
+abline(fit1$coefficients[1], fit1$coefficients[2])
+```
+
+#### (b) Test the null hypothesis that the slope is 0 against a two-sided alternative at $\alpha$ = 0.01, and interpret your findings.
+```{r ftcollinstemp null hypothesis, echo = TRUE}
+# null hypothesis is "the slope of the regression line is equal to 0"
+summary(fit1)$coefficients
+pValue <- 0.04284
+pValue
+```
+Since the p-value, 0.04284, is greater than the $\alpha = 0.01$, this means we could accept the null hypothesis. In other words, the slope of regression line is equal to 0.  
+
+#### (c)  What percentage of the variability in winter is explained by fall?
+```{r ftcollinstemp null hyp part 2, echo = TRUE}
+summary(fit1)$r.squared
+```
+3.71% of the variability in winter is explained by fall. 
