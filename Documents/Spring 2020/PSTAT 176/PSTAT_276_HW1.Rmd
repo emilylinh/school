@@ -1,0 +1,89 @@
+---
+title: "PSTAT 276 HW1"
+author: "Emily Lu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+
+```{r setup, echo=FALSE, message=FALSE}
+library(knitr)
+library(reticulate)
+pd <- import("pandas")
+math <- import("math")
+np <- import("numpy")
+```
+
+4. Consider the up-and-in barrier Call: it pays $V_N = (S_N - K)_+$ but only if $\text{max}_n S_n > B$, i.e. at some point between 0 and $T$, the stock price exceeded the level $B$. If this happens, we say that the option got "knocked in". The barrier option is path-dependent. Take a binomial tree with $u=1.05, \; d=0.95,\; r=0.01$ and $N=8$. The barrier parameters are $S_0 = 10, \; K=11$ and $B$ to be specified below. There are a total of $2^N=256$ scenarios in this tree. By directly enumerating them as $\omega^{(1)}=HHHHHHHH,\; \omega^{(2)}=HHHHHHHT,\;..., \; \omega^{(256)}=TTTTTTTT$ and computing $\mathbb{Q}(\omega^{(i)})$, find the price of the up-and-in barrier Call: 
+$$\mathbb{E}^Q \bigg [\frac{V_N}{(1+r)^N} \bigg ]  = \frac{1}{(1+r)^N} \sum^{256}_{i=1} \mathbb{Q}(\omega^{(i)})V_N(\omega^{(i)})$$
+
+    The provided R code in class shows how to enumerate the scenarios by translating between the index $i$ of $\omega^{(i)}$ and the individual coin tosses $\omega^{(i)}_k$. As an example, it computes the final stock price $S_N(\omega_1...\omega_N).$ You will need to modify the code to compute the barrier Call payoffs. 
+
+    For each $B = 11, 11.5, 12, 12.5, 13$ report: (i) number of scenarios that have nonzero payoff; (ii) risk-neutral probability of being knocked-in, (iii) no-arbitrage price of the barrier Call.
+    Note: if $B = 11 = K$ then the barrier feature doesn’t do anything and the answer you get is the same as for ordinary Call.
+
+```{python}
+import numpy as np
+u = 1.05; d = 0.95; r = 0.01; n = 8; S0 = 10; M = 8
+
+def permgrid(n, u, d):
+    inds = np.indices((2,) * n)
+    inds = inds.reshape(n, -1).T
+    inds = d*inds
+    return np.where(inds == 0, u, inds)
+
+def binomialPath(M):
+    PQ = permgrid(M, u, d)
+    S = np.zeros((2**n, n+1))
+    S[:, 0] = S0 
+    
+    for i in range(n):
+        S[:, i+1] = S[:, i]*PQ[:, i]
+              
+    return S 
+
+PQ = permgrid(M, u, d)    
+S = binomialPath(M)
+
+S
+```
+```{r}
+knock_in <- function(M, B, K, S=SN,r=r, n=N, u=u, d=d, S0=S0, w = UUi){
+  Q <- 0 
+  
+  Payoff <- rep(0, M)
+  nonzero <- 0 
+  for (j in 1: M){
+    Q <- Q + q^sum(w)*(1-q)^(2^8-sum(w))
+    if (max(S[j, 1:N+1]) > B)
+      Payoff[j] <- pmax(S[j, N+1]-K, 0)
+    if (Payoff[j] > 0)
+      nonzero <- nonzero + 1 
+  }
+  Price <- sum(Q*Payoff)/(1+r)^N
+  sprintf('Nonzero count is %s.', nonzero)
+  sprintf('Risk prob. is %s.', Q)
+  sprintf('Price is %s.', Price)
+  return(0)
+}
+knock_in(256, 11, 11, S=SN,r=r, n=N, u=u, d=d, S0=S0, w = UUi)
+```
+6. Consider a 4-period model for the EUR/USD exchange rate with S0 = 1.05, u = 1.01,
+d = 0.99 and r = 0 (no interest rates!).
+(a) Price a “Hit Box Option” that extends from t = 1.9 to t = 4.1 and from St = 1.03 to St = 1.07 (i.e. you need to consider S1, S2, S3, S4 to determine the payoff);
+
+```{r}
+
+}
+# BoxOption(1, 1.9, 4.1, 1.03, 1.07, 4)
+# BoxOption(0, 1.9, 4.1, 1.045, 1.055, 4)
+```
+
+(b) Price a “Miss Box Option” that extends from t = 1.9 to t = 4.1 and from St = 1.045
+to St = 1.055.
+Bonus (+3pt): write code (based on the R code also used in Q4) to automate the pricing
+of this option for any user-specified Box parameters and any number of periods N.
+
+```{r}
+# BoxOption(1, 1.9, 4.1, 1.03, 1.07, 4)
+```

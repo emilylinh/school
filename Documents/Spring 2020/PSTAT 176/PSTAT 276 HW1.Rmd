@@ -1,0 +1,71 @@
+---
+title: "PSTAT 276 HW1"
+author: "Emily Lu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+
+```{r setup, echo=FALSE, message=FALSE}
+library(knitr)
+```
+
+\begin{document}
+1. Consider the one-period binomial model with $d<1+R<u$. We wish to price at-the-money Call option on $S_1$ with payoff
+$V_1 = (S_1 - S_0)_+$.
+
+(a) Compute $\pi$: the discounted expected payoff of the option under the subjective probability measure $\mathbb{P}$. Your answer should be an algebraic expression involving $S_0, p, R, u, d$ (some of the above may not be needed).
+
+\begin{eqnarray} \pi =  \mathbb{E} \end{eqnarray}        
+
+(b) Compute $P$: the no-arbitrage price of the option. Again, your answer should be an algebraic expression involving $S_0, p, R, u, d$ (some of the above may not be needed).
+
+(c) How does $\pi$ change as $p$ increases? What about $P$? Discuss how the answers differ between $\pi$ and $P$. 
+
+(d) How does $\pi$ change as $r$ increases? What about $P$? Discuss how the answers differ between $\pi$ and $P$. 
+
+
+2. Consider a binomial tree with $S_0 = 16, \; u=1.25, \; d=0.75$, and 3 periods (so a total of 8 scenarios). Interest rate is $r=0.05.$ We are interested in an Asian-type option that pays $(\frac{1}{3} Y_3-S_3)_+$ at $T=3$, where $Y_3=S_1+S_2+S_3.$ Thus, , to determine the payoff we compare the average asset price $\frac{S_1+S_2+S_3}{3}$ to the terminal stock price $S_3$ and collect the difference. 
+
+Determine the no-arbitrage price of this contingent claim today: $V_0$. Also determine the replicating portfolios for each time step $t=0,1,2$ along the scenario $w=THT$. 
+
+```{r}
+u <- 1.25; d <- 0.75; r <- 0.05; S0 <- 16
+q <- (1+r-d)/(u-d)
+
+```
+
+3. Now work out Exercise 1.8 in Shreve in the setting of Question 2 above (ie change the payoff function and parameter values to those stated in Question 2, and solve (i), (ii), (iii) of Exercise 1.8). Note that you should end up with the same price $v_0=V_0$ as in Q2. 
+
+    Hint: you may wish to consult with example 1.2.4 on p. 14 of Shreve text.
+
+
+[Exercise 1.8 (Asian option)] Consider the three-period model of Example 1.2.1, with $S_{0}=4,u=2,d=1/2$, and take the interest rate $r=1/4$, so that $\tilde{p}=\tilde{q}=1/2$.  For $n=0,1,2,3$, define $Y_{n}=\sum_{k=0}^{n}S_{k}$.  Consider and Asian call option that expires at time three and has strike $K=4$.  This is like a European call, except the payoff of the option is based on the average stock price rather than the final stock price.  Let $v_{n}(s,y)$ denote the price of this option at time $n$ if $S_{n}=s$ and $Y_{n}=y$.  In particular, $v_{3}(s,y) = (\frac{1}{4}y-4)^{+}$.
+
+i. Develop an algorithm for computing $v_{n}$ recursively.  In particular, write a formula for $v_{n}$ in terms of $v_{n+1}$.} \label{first}
+\begin{align*}
+v_{n}(s,y) & = \frac{1}{1+r}\left[\tilde{p}v_{n+1}\left(2s,y + 2s\right) + \tilde{q}v_{n+1}\left(\frac{1}{2}s,y+\frac{1}{2}s\right)\right]
+\end{align*}
+
+ii. Apply the algorithm developed in (\ref{first}) to compute $v_{0}(4,4)$, the price of the Asian option at time 0.
+
+iii. Provide a formula for $\delta_{n}(s,y)$, the number of shares of stock that should be held by the replicating portfolio at time $n$ if $S_{n}=s$ and $Y_{n}=y$.
+\begin{align*}
+\delta_{n}(s,y) & = \frac{v_{n+1}(2s,y+2s) - v_{n+1}(\frac{1}{2}s,y+\frac{1}{2}s)}{2(n+1)s - \frac{1}{2}(n+1)s} \\
+ & = \frac{v_{n+1}(2s,y+2s) - v_{n+1}(\frac{1}{2}s,y+\frac{1}{2}s)}{\frac{3}{2}(n+1)s} \\
+ & = \frac{2}{3}\frac{v_{n}(s,y)}{(n+1)s}
+\end{align*}
+
+
+4. Consider the up-and-in barrier Call: it pays $V_N = (S_N - K)_+$ but only if $\text{max}_n S_n > B$, i.e. at some point between 0 an $T$, the stock price exceeded the level $B$. If this happens, we say that the option got "knocked in". The barrier option is path-dependent. Take a binomial tree with $u=1.05, \; d=0.95,\; r=0.01$ and $N=8$. The barrier parameters are $S_0 = 10, \; K=11$ and $B$ to be specified below. There are a total of $2^N=256$ scenarios in this tree. By directly enumerating them as $\omega^{(1)}=HHHHHHHH,\; \omega^{(2)}=HHHHHHHT,\;..., \; \omega^{(256)}=TTTTTTTT$ and computing $\mathbb{Q}(\omega^{(i)})$, find the price of the up-and-in barrier Call: 
+$$\mathbb{E}^Q \bigg [\frac{V_N}{(1+r)^N} \bigg ]  = \frac{1}{(1+r)^N} \sum^{256}_{i=1} \mathbb{Q}(\omega^{(i)})V_N(\omega^{(i)})$$
+
+    The provided R code in class shows how to enumerate the scenarios by translating between the index $i$ of $\omega^{(i)}$ and the individual coin tosses $\omega^{(i)}_k$. As an example, it computes the final stock price $S_N(\omega_1...\omega_N).$ You will need to modify the code to compute the barrier Call payoffs. 
+
+    For each $B = 11, 11.5, 12, 12.5, 13$ report: (i) number of scenarios that have nonzero payoff; (ii) risk-neutral probability of being knocked-in, (iii) no-arbitrage price of the barrier Call.
+    Note: if $B = 11 = K$ then the barrier feature doesn’t do anything and the answer you get is the same as for ordinary Call.
+
+
+5. Consider the following binomial tree: 
+
+
