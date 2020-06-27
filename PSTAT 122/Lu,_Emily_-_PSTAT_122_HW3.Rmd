@@ -1,0 +1,103 @@
+---
+title: "PSTAT 122 - HW3"
+author: "Emily Lu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(tidyverse)
+library(agricolae)
+options(knitr.table.format = "latex")
+```
+
+__3.31__ An article in the Journal of the Electrochemical Society describes an experiment to investigate the low-pressure vapor deposition of poloysilicon. The experiment was carried out in a large-capacity reactor at Sematech in Austin, Texas. The reactor has several wafer positions, and four of these positions are selected at random. The response variable is film thickness uniformity. Three replicates of the experiment were run, and the data are as follows:
+
+```{r 1, message=FALSE, echo = FALSE, fig.align='center'}
+p1 <- c(1, 2.76, 5.67, 4.49)
+p2 <- c(2, 1.43, 1.70, 2.19)
+p3 <- c(3, 2.34, 1.97, 1.47)
+p4 <- c(4, 0.94, 1.36, 1.65)
+d <- rbind(p1, p2, p3, p4)
+rownames(d) <- c('1', '2', '3', '4')
+kable(d) %>%
+  kable_styling(position = "center") %>%
+  add_header_above(c("Wafer Position" = 1, "Uniformity" = 2))
+```
+
+(a) Is there a difference in the wafer positions? Use $\alpha = 0.05$. 
+
+    Sol. $H_0: \sigma_{\tau}^2 = 0$ vs $H_1: \sigma_{\tau}^2 > 0$
+    
+    ```{r}
+uniformity <-c(2.76, 5.67, 4.49, 1.43, 1.70, 2.19, 
+               2.34, 1.97, 1.47, 0.94, 1.36, 1.65)
+wafer <- as.factor(rep(1:4, each=3))
+
+fit <- aov(uniformity~wafer)
+summary(fit)
+```
+    
+    Since the p-value is small (0.00775 < 0.05), there is sufficient evidence to suggest that there is a difference in the wafer positions. 
+    
+(b) Estimate the variability due to wafer positions. 
+
+    Sol. \begin{eqnarray} \sigma_{\tau}^2 &=& \frac{MS_{Treatments} - MS_E}{n} \\  &=& \frac{5.407 - 0.652}{3} = 1.585 \end{eqnarray}
+
+(c) Estimate the random error component. 
+
+    Sol. $$\hat{\sigma}^2 = MS_E = 0.652$$
+
+(d) Analyze the residuals from this experiment and comment on model adequacy. 
+
+    The variance of any observation on strength, $Y_{ij}$, is estimated by $\sigma_y^2 = \hat{\sigma}^2 + \hat{\sigma}_{\tau}^2 = 0.652 + 1.585 = 2.237$. Therefore, $1.585/2.237 = 71.08\%$ of the total variance of the film thickness uniformity is due to the wafer positions, or similarly most of the variability is attributed to the differences between wafer positions. 
+
+    ```{r}
+par(mfrow = c(1, 2))
+anova_lm <- lm(uniformity~wafer)
+
+qqnorm(anova_lm$residuals)
+qqline(anova_lm$residuals, col = 'red')
+
+plot(anova_lm$fitted.values, anova_lm$residuals,
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values")
+abline(h = 0)
+```
+
+    Based on these plots above, the normality seem to be satisfied. However, the equal variance assumptions seems to be violated. 
+
+__4.7__ A chemist wishes to test the effect of four chemical agents on the strength of a particular type of cloth. Because there might be variability from one bolt to another, the chemist decides to use a randomized block design, with the bolts of cloth considered as blocks. She selects five bolts and applies all four chemicals in random order to each bolt. The resulting tensile strengths follow. Analyze the data from this experiment (use $\alpha = 0.05$) and draw appropriate conclusions. 
+
+```{r 2, message=FALSE, echo = FALSE, fig.align='center'}
+p1 <- c(1, 73, 68, 74, 71, 67)
+p2 <- c(2, 73, 67, 75, 72, 70)
+p3 <- c(3, 75, 68, 78, 73, 68)
+p4 <- c(4, 73, 71, 75, 75, 69)
+d <- rbind(p1, p2, p3, p4)
+rownames(d) <- c('1', '2', '3', '4')
+kable(d) %>%
+  kable_styling(position = "center") %>%
+  add_header_above(c("Chemical" = 0, "Bolt" = 5))
+```
+```{r}
+strength <- c(73, 68, 74, 71, 67, 73, 67, 
+         75, 72, 70, 75, 68, 78, 73, 68,
+         73, 71, 75, 75, 69)
+bolt <- as.factor(c(rep(1:5, times = 4)))
+chemical <- as.factor(c(rep(1:4, each = 5)))
+
+strength.aov <- aov(strength ~ bolt + chemical)
+summary(strength.aov)
+
+LSD.test(strength, chemical, DFerror = 12, MSerror = 1.82, alpha = 0.05)
+plot(LSD.test(strength, chemical, DFerror = 12, MSerror = 1.82, alpha = 0.05))
+```
+    
+Our model for this experiment is $$Y_{ij} = \mu + \tau_i + \beta_i + \epsilon_{ij} \; for \; i = 1,...,a; \; j = 1,..., b.$$ For this Randomized Complete Block Design, our hypotheses are $$H_0: \tau_1 = \tau_2 = ... = \tau_a = 0 \; \text{vs} \; H_1: \tau_i \neq 0$$ for at least one $i$ where $\tau_i$ is the $i$-th treatment effect. 
+
+
+Since the p-value of the bolts (blocks) is less than 0.05, there is sufficient evidence to suggest that there is a difference between the means of the 5 bolts. In addition to the p-value of the chemicals (treatments) being greater than 0.05, the Fisher LSD procedure also indicates that the type of chemicals does not seem to show signficant difference in the means of the 4 chemicals. 

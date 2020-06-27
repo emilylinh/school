@@ -1,0 +1,134 @@
+---
+title: "PSTAT 122 - HW1"
+author: "Emily Lu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+library(knitr)
+```
+
+__2.25__ The following are the burning times (in minutes) of chemical flares of two different formulations. The design engineers are interested in both the mean and variance of the burning times.
+
+```{r 1, message=FALSE, echo = FALSE}
+type1 <- c(65, 81, 57, 66, 82, 82, 67, 59, 75, 70)
+type2 <- c(64, 71, 83, 59, 65, 56, 69, 74, 82, 79)
+kable(cbind(type1, type2), col.names = c('Type 1', 'Type 2'))
+```
+
+(a) Test the hypothesis that the 2 variances are equal. Use $\alpha = 0.05$. 
+
+    Sol.: $H_0: \sigma^2_1 = \sigma^2_2$ vs. $H_1: \sigma^2_2 \neq \sigma^2_2$.
+
+    ```{r 1a}
+n1 <- length(type1)
+n2 <- length(type2) 
+
+# sample variances
+s12 <- sum((type1 - mean(type1))^2)/(n1 - 1)
+s22 <- sum((type2 - mean(type2))^2)/(n2 - 1)
+
+# critical F 
+F_stat <- s12/s22
+
+sprintf('Critical F is %s.', F_stat)
+sprintf('Observed F is %s.', qf(0.025, n1 - 1, n2 - 1))
+
+# checking results with off-the-shelf R function
+var.test(type1, type2)
+```
+
+    Using the F-test, we find that F=0.97822 and the observed F statistic is 0.24839. Since our observed F statistic is less than our critical F, we fail to reject $H_0$ and could conclude that the variances are equal.  
+
+
+(b) Using the results of (a), test the hypothesis that the mean burning times are equal. Use $\alpha = 0.05$. What is the p-value for this test? 
+    
+    Sol. $H_0: \mu_1 = \mu_2$ vs. $H_1: \mu_1 \neq \mu_2$
+    
+    ```{r 1b}
+ybar1 <- mean(type1)
+ybar2 <- mean(type2)
+
+sp <- sqrt(((n1 - 1)*s12 + (n2 - 1)*s22)/(n1 + n2 - 2))
+t_stat <- (ybar1 - ybar2)/(sp*(sqrt(1/n1 + 1/n2)))
+
+pval <- 2*pt(t_stat, n1 + n2 - 2, lower.tail = F)
+sprintf('p-value is %s.', pval)
+
+# checking results with off-the-shelf R function
+t.test(type1, type2, var.equal = T)
+```
+
+    Using the two-sided t-test, we find our p-value to be 0.9622 which is greater than $\alpha = 0.05$. Therefore, we fail to reject $H_0$ and could conclude that the meaning burning times are equal. 
+
+(c) Discuss the role of the normality assumption in this problem. Check the assumption of normality for both types of flares. 
+    
+    Sol.: The role of the normality assumption in this problem is the equality of variances for the two group. Based on our part a results, the variances of the two groups are equal and thus, the normality assumption would be satisfied. However, to further examine the normality assumption, we plotted a Q-Q plot below. 
+    
+    ```{r 1c, fig.align = 'center'}
+par(mfrow = c(1,2))
+
+qqnorm(type1, main = 'Q-Q Plot for Type 1')
+qqline(type1, col = 'red')
+
+qqnorm(type2, main = 'Q-Q Plot for Type 2')
+qqline(type2, col = 'red')
+```
+
+    Although there are some minor divergences from the normal lines, the overall trend for both type of flares seems to be normally distributed. 
+
+__2.29__ The diameter of a ball bearing was measured by 12 inspectors, each using two different kinds of calipers. The results are as follows: 
+
+```{r 2, echo = FALSE, message=FALSE}
+caliper1 <- c(0.265, 0.265, 0.266, 0.267, 0.267, 0.265, 0.267, 0.267, 0.265, 0.268, 0.268, 0.265)
+caliper2 <- c(0.264, 0.265, 0.264, 0.266, 0.267, 0.268, 0.264, 0.265, 0.265, 0.267, 0.268, 0.269)
+kable(cbind(caliper1, caliper2), col.names = c('Caliper 1', 'Caliper 2'))
+```
+    
+(a) Is there a significance difference between the means of the population of measurements from which the two samples were selected? Use $\alpha = 0.05$. 
+
+    Sol.: Let $\mu_d=\mu_1-\mu_2$. $H_0: \mu_d = 0$ vs. $H_1: \mu_d \neq 0$
+
+    ```{r 2a}
+n <- length(caliper1)
+dj <- caliper1 - caliper2
+dbar <- sum(caliper1 - caliper2)/n
+sd <- sqrt((sum(dj^2) - 1/n*sum(dj)^2)/(n-1))
+
+t_stat <- dbar/(sd*sqrt(1/n))
+
+sprintf('Critical t is %s.', t_stat)
+sprintf('Observed t is %s.', qt(.025, n, lower.tail = F))
+
+# checking results with off-the-shelf R function
+t.test(caliper1, caliper2, paired = T)
+```
+
+    Using the paired t-test, we found our critical t-statistic of 0.43179 to be less than our observed t-statistic of 2.17881. Therefore, we would fail to reject the null hypothesis and could conclude that there is not a significant difference between the means of the population of measurements from which the two samples were selected. 
+
+(b) Find the p-value for the test in part(a). 
+    
+    ```{r 2b}
+pval <- 2*pt(t_stat, n - 1, lower.tail = F)
+sprintf('p-value is %s.', pval)
+```
+
+    According to our paired t-test in part(a), the p-value for the test in part(a) is 0.6742 which is greater than $\alpha = 0.05$. Therefore, we would fail to reject $H_0$. 
+
+(c) Construct a 95% CI on the difference in mean diameter measurements for the two types of calipers. 
+    
+    Sol.:  
+    ```{r 2c}
+ts <- qt(.025, n - 1, lower.tail = F)
+
+x <- dbar - ts*sd*sqrt(1/n)
+y <- dbar + ts*sd*sqrt(1/n)
+
+sprintf('The 95-percent CI is (%.6f, %.6f).', x, y)
+
+# checking results with off-the-shelf R function
+t.test(caliper1, caliper2, paired = T)
+```
+    
+    As shown above, the 95% confidence interval (CI) on the difference in mean diameter measurements for the two types of calipers is (-0.001024, 0.001524). 

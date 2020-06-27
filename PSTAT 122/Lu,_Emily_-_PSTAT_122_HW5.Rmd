@@ -1,0 +1,96 @@
+---
+title: "PSTAT 122 - HW5"
+author: "Emily Lu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(tidyverse)
+library(agricolae)
+options(knitr.table.format = "latex")
+```
+
+__13.1__ An experiment was performed to investigate the capability of a measurement system. Ten parts were randomly selected, and two randomly selected operators measured each part three times. The tests were made in random order, and the data are shown below: 
+
+```{r}
+part <- factor(rep(1:10,times=6))
+operator <- factor(rep(1:2,each=30))
+measurement <- c(50, 52, 53, 49, 48, 52, 51, 52, 50, 47,
+                 49, 52, 50, 51, 49, 50, 51 ,50, 51, 46,
+                 50, 51, 50, 50, 48, 50, 51, 49, 50, 49,
+                 50, 51, 54, 48, 48, 52, 51, 53, 51, 46,
+                 48, 51, 52, 50, 49, 50, 50, 48, 48, 47,
+                 51, 51, 51, 51, 48, 50, 50, 50, 49, 48)
+head(cbind(part,operator,measurement))
+```
+
+(a) Analyze the data from this experiment. 
+
+    Sol. $H_0: \; \sigma^2_{\tau \beta} = 0$  vs. $H_1$: $\sigma^2_{\tau \beta} > 0$
+
+    ```{r}
+meas.aov <- aov(measurement ~ part*operator)
+summary(meas.aov)
+```
+
+    According to the ANOVA table above, the p-value (0.927) is greater than $\alpha = 0.05$ which means that there is insufficient evidence to suggest that the interaction between the parts and operators significantly affects the measurement. 
+    Since the interaction was not significant, we will now test the individual factors. Our hypotheses will be $H_0:\; \sigma^2_\tau = 0$ vs $H_1: \; \sigma^2_\tau >0$. 
+    
+    ```{r}
+a <- 10; b <- 2; n <- 3
+F_part <- 11.002/0.602
+pf(F_part, (a-1), (a-1)*(b-1), lower.tail = F)
+```
+
+    Since the p-value is very small (< $\alpha = 0.05$), we would reject $H_0$. There is sufficient evidence to suggest that the parts significantly affect measurement.
+    
+    ```{r}
+    F_operator <- 0.417/0.602
+    pf(F_operator,(a-1), (a-1)*(b-1), lower.tail = F)
+    ```
+
+    Since the p-value is $0.7034 > \alpha = 0.05$, fail to reject $H_0$. There is insufficient evidence to suggest that the operators significantly affect measurement.
+    
+(b) Estimate the variance components using the ANOVA method. 
+
+    $\hat{\sigma}^2 = MSE = 1.500$
+
+    $\hat{\sigma}^2_{\tau\beta} = \frac{0.602 - 1.500}{3} = -0.2993333$
+
+    $\hat{\sigma}^2_{\tau} = \frac{11.002 - 0.602}{2*3} = 1.733333$
+
+    $\hat{\sigma}^2_{\beta} = \frac{0.417 - 0.602}{10*3} = -0.006166667$
+
+__13.5__ Reanalyze the measurement systems experiment in Problem 13.1, assuming that operators are a fixed factor. Estimate the appropriate model components using the ANOVA method.
+
+Since operators is now a fixed factor and parts is still a random factor, this is now a mixed model. The interaction, however, is still a random effect. The ANOVA table is the same, but F-statistics may change.
+
+$H_0: \beta_j = 0 \forall j$ vs. $H_1: \beta_j \neq 0$ for some $j$ 
+
+$F_0 = \frac{MSB}{MSAB} = \frac{0.417}{0.602} = 0.692691$
+
+```{r}
+pf(0.692691, b-1, (a-1)*(b-1), lower.tail = F)
+```
+
+Since p-value = $0.4267823 > \alpha = 0.05$, we fail to reject $H_0$. 
+
+$H_0: \sigma^2_\tau = 0$ vs. $H_1: \sigma^2_\tau > 0$ 
+
+$F_0 = \frac{MSA}{MSE} = \frac{11.002}{1.500} = 7.334667$
+
+```{r}
+pf(7.334667, a-1, a*b*(n-1), lower.tail = F)
+```
+
+Since p-value = $0.0001103954 < \alpha = 0.05$, we reject $H_0$. 
+
+$\hat{\sigma}^2_\tau = \frac{MSA-MSE}{bn} = \frac{11.002 - 1.500}{2*3} = 1.583667$
+
+$\hat{\sigma}^2_{\tau \beta} = \frac{MSAB - MSE}{n} = \frac{0.602 - 1.500}{3} = -0.2993333$
+
+$\hat{\sigma}^2 = MSE = 1.500$
