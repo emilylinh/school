@@ -19,9 +19,9 @@ Hello, this is a compilation of all the programming projects I have completed du
 - MATH 104A: Introduction to Numerical Analysis (Fall 2019) 
   - This folder contains all the programming assignments I have completed. I used Jupyter Notebook to record and display my solutions in either Markdown/LaTeX or Python to each homework question. In each assignment, you'll see how I wrote short Python codes to efficiently derive strenuous numerical computations. 
   - The topics I learned in this course were Mathematical Preliminaries and Error Analysis, Solutions of Equations in One Variable, and Interpolation and Polynomial Approximation. 
-
+  
 -  PSTAT 126: Regression Analysis (Spring 2019) 
-  - This folder contains all the homework assignments I have completed for this course. These assignments demonstrate my data visualization, statistical programming, and data/statistical analysis skills in R. In Homework 6, you'll see my data visualization skills with ggplot2 which is a highly favored R package among data visualization frantics! 
+  - This folder contains all the homework assignments I have completed for this course. These assignments demonstrate my data visualization, statistical programming, and data/statistical analysis skills in R. In Homework 6, you'll see my data visualization skills with ggplot2 which is a highly favored R package among data visualization frantics. 
   - The topics I learned in this course were Linear and Multiple Regression, Analysis of Residuals, Variable and Model Selection including Stepwise Regression, and Analysis of Covariance. 
 
 - PSTAT 160B: Applied Stochastic Process (Winter 2019) 
