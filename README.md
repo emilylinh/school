@@ -6,12 +6,11 @@ Hello, this is a compilation of all the programming projects I have completed du
 
 - PSTAT 276: Advanced Mathematical Finance (Spring 2020) 
   - This folder contains the programming assignments I have completed for this course. These assignments demonstrate my data visualization and statistical programming skills in relation to quantitative finance. I mostly used the following Python packages: pandas, numpy, matplotlib, and scipy to perform data analytics and visualization. 
-  - The topics I learned in this course were 
+  - The topics I learned in this course were Asset Pricing Models, Portfolio Optimization, Interest Rate Modeling, and Derivative Pricing. In particular, I studied and applied the Fundamental Theorem of Asset Pricing, Markowitz Mean-Variance Frontier, Capital Asset Pricing Theory, Monte Carlo methods, and variance reduction techniques.
 
 - PSTAT 274: Time Series (Fall 2019) 
   - This folder contains all the assignments I have completed. These assignments demonstrate my data visualization, statistical programming, hypothesis testing, and data/statistical analysis skills in R. I used RStudio and Markdown/LaTeX to produce my reports. 
-  - The topics I learned in this course were Time Series Regression and Exploratory Data Analysis, ARIMA Models, Spectral Analysis and Filtering, 
-
+  - The topics I learned in this course were Stationary and Non-Stationary Models; Seasonal Time Series; ARMA models: calculation of ACF, PACF, mean and ACF estimation; Model Estimation: Yule-Walker Estimates, ML Method; Identification Techniques, Diagnostic Checking Forecasting, Spectral Analysis; Periodogram.
 
 - MATH 104B: Numerical Analysis (Winter 2020) 
   - Same description as MATH 104A's folder description. 
@@ -40,3 +39,4 @@ Hello, this is a compilation of all the programming projects I have completed du
 - CS 8: An Introduction to Computer Science (Winter 2017) 
   - This folder contains all the assignments and projects I have completed for my first computer science course at UCSB. 
   - In this course, I learned about Python Syntax, Objects and Classes, Strings and Console Output, Conditionals and Control Flow, File Input/Output, Character Encodings, Containers and Randomness, and the Web and Search. 
+
