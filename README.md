@@ -21,7 +21,7 @@ Hello, this is a compilation of all the programming projects I have completed du
   - The topics I learned in this course were Mathematical Preliminaries and Error Analysis, Solutions of Equations in One Variable, and Interpolation and Polynomial Approximation. 
 
 - PSTAT 126: Regression Analysis (Spring 2019) 
-  - This folder contains all the homework assignments I have completed for this course. These assignments demonstrate my data visualization, statistical programming, and data/statistical analysis skills in R. In Homework 6, you'll see my data visualization skills with ggplot2 which is a highly favored R package among data visualization frantics! 
+  - This folder contains all the homework assignments I have completed for this course. These assignments demonstrate my data visualization, statistical programming, and data/statistical analysis skills in R. In Homework 6, you'll see my data visualization skills with ggplot2 which is a highly favored R package among data visualization frantics. 
   - The topics I learned in this course were Linear and Multiple Regression, Analysis of Residuals, Variable and Model Selection including Stepwise Regression, and Analysis of Covariance. 
 
 - PSTAT 160B: Applied Stochastic Process (Winter 2019) 
@@ -39,3 +39,4 @@ Hello, this is a compilation of all the programming projects I have completed du
 - CS 8: An Introduction to Computer Science (Winter 2017) 
   - This folder contains all the assignments and projects I have completed for my first computer science course at UCSB. 
   - In this course, I learned about Python Syntax, Objects and Classes, Strings and Console Output, Conditionals and Control Flow, File Input/Output, Character Encodings, Containers and Randomness, and the Web and Search. 
+
